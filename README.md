@@ -8,6 +8,32 @@ This project is an end-to-end computer vision application designed to classify s
 
 The system is split into two primary components: Model Training Pipeline and Inference Frontend.
 
+```mermaid
+graph TD
+    subgraph Data Pipeline
+        A[HuggingFace Dataset] -->|HAM10000| B(Transforms & Augmentation)
+        B --> C{WeightedRandomSampler}
+    end
+    
+    subgraph Model Training
+        C -->|Balanced Batches| D[EfficientNet-B0]
+        D -->|Focal Loss| E(Backpropagation)
+        E -->|Adam Optimizer| D
+        D --> F[best_model.pth]
+    end
+    
+    subgraph Streamlit Frontend
+        G[User Uploads Image] --> H(Image Preprocessing)
+        H --> I[Loaded EfficientNet Model]
+        F -.->|Loads Weights| I
+        I --> J(Class Prediction)
+        I --> K(Grad-CAM Heatmap)
+    end
+    
+    J --> L[UI Results Display]
+    K --> L
+```
+
 ### 1. Model Architecture & Training (`train.py`)
 - **Core Model**: The project uses **EfficientNet-B0**, leveraging transfer learning with pretrained ImageNet weights. The final classifier head is modified to output 7 classes.
 - **Data Pipeline**: The dataset is fetched using the Hugging Face `datasets` library (`marmal88/skin_cancer`). The images are resized to 224x224 and augmented (random horizontal/vertical flips, rotation, and color jitter) to improve generalization.
